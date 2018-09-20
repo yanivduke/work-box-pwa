@@ -1,25 +1,26 @@
 'use strict';
 import { register } from 'register-service-worker'
 
+function handleChannelMessage (retMsg){
+  console.log(retMsg);
+}
+
 const sendMsg = function(msg) {
   console.log('before sending msssage.')
-  return new Promise(function(resolve, reject){
-      // Create a Message Channel
-      var msg_chan = new MessageChannel();
-      console.log('inside promise.')
-      // Handler for recieving message reply from service worker
-      msg_chan.port1.onmessage = function(event){
-          if(event.data.error){
-              console.log(' sending msssage err: ' + event.data.error)
-              reject(event.data.error);
-          }else{
-              console.log(' sending msssage sucsses: ' + event.data)
-              resolve(event.data);
-          }
-      };
-
-      // Send message to service worker along with port for reply
-      navigator.serviceWorker.controller.postMessage(msg, [msg_chan.port2]);
+  navigator.serviceWorker.ready.then(function(reg) {
+    // set up a message channel to communicate with the SW
+    console.log(' sending msssage 1: ')
+    var channel = new MessageChannel();
+    console.log(' sending msssage 2: ')
+    channel.port1.onmessage = function(e) {
+      console.log(e);
+      console.log(' sending msssage 3: ' + e)
+      handleChannelMessage(e.data);
+      console.log(' sending msssage 4: ' + e.data)
+    }
+    var mySW = reg.active;
+    console.log(' sending msssage sucsses: ' + mySW)
+    mySW.postMessage(msg, [channel.port2])
   });
 }
 

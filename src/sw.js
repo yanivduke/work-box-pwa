@@ -11,6 +11,7 @@ self.addEventListener('message', (event) => {
   switch (event.data) {
     case 'startSync':
       console.log('message accepted on SW!');
+      event.ports[0].postMessage("SW Says 'Hello back!'");
       break;
     default:
       // NOOP
