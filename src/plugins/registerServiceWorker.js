@@ -1,11 +1,7 @@
 'use strict';
 import { register } from 'register-service-worker'
 
-function handleChannelMessage (retMsg){
-  console.log(retMsg);
-}
-
-const sendMsg = function(msg) {
+const sendMsg = function(msg, handleChannelMessage) {
   console.log('before sending msssage.')
   navigator.serviceWorker.ready.then(function(reg) {
     // set up a message channel to communicate with the SW

@@ -29,9 +29,10 @@ export default {
   },
   computed: {
     isLoggedin() {
-      return store.getters.isAuthenticated
+      
+      return store.getters.isAuthenticated 
     },
-    comp2() {}
+    
   },
   methods:
   {

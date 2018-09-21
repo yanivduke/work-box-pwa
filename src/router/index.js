@@ -4,7 +4,7 @@ import store from '../store'
 
 import Login from "../pages/Login";
 import Logout from "../pages/Logout";
-
+import {AUTH_KEEPALIVE} from '../store/actions/auth'
 
 Vue.use(Router)
 
@@ -17,11 +17,16 @@ const ifNotAuthenticated = (to, from, next) => {
 }
 
 const ifAuthenticated = (to, from, next) => {
-  if (store.getters.isAuthenticated) {
-    next()
-    return
-  }
-  next('/login')
+  store.dispatch(AUTH_KEEPALIVE).then(() => {
+    if (store.getters.isAuthenticated) {
+      next()
+      return
+    }
+    next('/login')
+  }).catch((err)=>{
+    next('/login')
+  });
+  
   //document.location = '/login'
 }
 
