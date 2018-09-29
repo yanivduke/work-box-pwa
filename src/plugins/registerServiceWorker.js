@@ -1,9 +1,10 @@
 'use strict';
 import { register } from 'register-service-worker'
 
-const sendMsg = function(msg, handleChannelMessage) {
+const sendMsg = async function(msg, handleChannelMessage) {
   console.log('before sending msssage.')
-  navigator.serviceWorker.ready.then(function(reg) {
+  navigator.serviceWorker.ready
+  .then(async function(reg) {
     // set up a message channel to communicate with the SW
     console.log(' sending msssage 1: ')
     var channel = new MessageChannel();
@@ -16,8 +17,12 @@ const sendMsg = function(msg, handleChannelMessage) {
     }
     var mySW = reg.active;
     console.log(' sending msssage sucsses: ' + mySW)
-    mySW.postMessage(msg, [channel.port2])
-  });
+    await mySW.postMessage(msg, [channel.port2])
+  })
+  .catch(function(err) {
+    // set up a message channel to communicate with the SW
+    console.log(' sending msssage err: ' + err);
+  })
 }
 
 const reg = function() {

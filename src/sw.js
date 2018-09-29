@@ -1,7 +1,8 @@
 console.log("my service worker")
 
 importScripts('/js/idb.js');
-importScripts('/js/axios.min.js');
+//importScripts('/js/axios.js');
+
 
 self.addEventListener('message', (event) => {
   if (!event.data){
@@ -11,7 +12,35 @@ self.addEventListener('message', (event) => {
   switch (event.data) {
     case 'startSync':
       console.log('message accepted on SW!');
-      event.ports[0].postMessage("SW Says 'Hello back!'");
+      idbKeyVal.get('osAuth', 'auth-user-token')
+      .then((token) => {
+        console.log('sw auth-user-token resp: ' + token)
+        fetch('http://localhost:3001/api/users', {
+          method: "GET", // *GET, POST, PUT, DELETE, etc.
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          //credentials: "same-origin", // include, same-origin, *omit
+          headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "bearer": token,
+            
+          }
+        })
+        .then((resp) => resp.json())
+        .then((responseData) => {
+          console.log("SW fatche users: " + responseData)
+          //{type:'json', entity:'users', index:0, size:0, total:0, searchParam:{}}
+          idbKeyVal.set('osUsers', 1, responseData)
+            .then(()=>{
+              console.log("idbKeyVal 'users set'")
+              event.ports[0].postMessage("SW Says 'users fatched!'");
+            })
+        })
+        .catch(err => {
+          console.log("SW fetch err: " + err)
+        })
+      })
+      
       break;
     default:
       // NOOP
@@ -57,6 +86,28 @@ workbox.routing.registerRoute(
       }),
     ],
   }),
+);
+
+workbox.routing.registerRoute(new RegExp('http://localhost:3001/api/users'), 
+  (event) => {
+    idbKeyVal.get('osUsers', 1).then((localdata) => {
+      return localdata
+    }).catch(()=>{
+      fetch(event.request).then((resp) => resp.json())
+      .then((responseData) => {
+        console.log("SW fatch routing users: " + responseData)
+        //{type:'json', entity:'users', index:0, size:0, total:0, searchParam:{}}
+        idbKeyVal.set('osUsers', 1, responseData)
+          .then(()=>{
+            console.log("idbKeyVal routing 'users set'")
+            return responseData
+          })
+      })
+      .catch(err => {
+        console.log("SW fetch err: " + err)
+      })
+    })
+  },
 );
 
 workbox.routing.registerRoute(/.*(?:googleapis)\.com.*$/,

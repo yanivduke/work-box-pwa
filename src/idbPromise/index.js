@@ -12,7 +12,7 @@ const init = function() {
     console.log('idb create db structure - in')
     console.log('making a new objects - start');
     if (!upgradeDb.objectStoreNames.contains('osUsers')) {
-      upgradeDb.createObjectStore('osUsers', {keyPath: 'email'});
+      upgradeDb.createObjectStore('osUsers');
     }
     if (!upgradeDb.objectStoreNames.contains('osAuth')) {
       upgradeDb.createObjectStore('osAuth', {autoIncrement: true});

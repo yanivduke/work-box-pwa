@@ -7,10 +7,6 @@ import {sendMsg} from '../../plugins/registerServiceWorker'
 
 const state = { token: '', status: '', hasLoadedOnce: false  }
 
-function handleChannelMessage (retMsg){
-  console.log(retMsg);
-}
-
 const getters = {
   isAuthenticated: state => !!state.token,
   authStatus: state => state.status,
@@ -24,10 +20,12 @@ const actions = {
       .then(resp => {
         console.log('axios resp: ' + resp.data.data.token)
 
-        idbKeyVal.set('osAuth', 'auth-user-token', resp.data.data.token).then(()=>{
-            sendMsg('startSync', handleChannelMessage)
-            commit(AUTH_SUCCESS, resp.data.data)
-            resolve(resp.data.data)
+        idbKeyVal.set('osAuth', 'auth-user-token', resp.data.data.token).then(async function () {
+          await sendMsg('startSync', function (retMsg) {
+            console.log(retMsg);
+          })
+          commit(AUTH_SUCCESS, resp.data.data)
+          resolve(resp.data.data)
         })
       })
       .catch(err => {
