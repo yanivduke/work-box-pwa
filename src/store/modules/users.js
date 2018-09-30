@@ -23,10 +23,21 @@ const actions = {
   [USERS_SEARCH_REQUEST]: ({commit, dispatch}) => {
     return new Promise((resolve, reject) => {
       commit(USERS_SEARCH_REQUEST)
-      idbKeyVal.get('osAuth', 'auth-user-token').then((toekn) => {
-        axios.defaults.headers.common['bearer'] = toekn
-        axios.create({ baseURL: 'http://localhost:3001/api/'}).get('users')
-        .then(resp => {
+
+      idbKeyVal.get('osAuth', 'auth-user-token')
+      .then((token) => {
+        fetch('http://localhost:3001/api/users', {
+          method: "GET", // *GET, POST, PUT, DELETE, etc.
+          mode: "cors", // no-cors, cors, *same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          //credentials: "same-origin", // include, same-origin, *omit
+          headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "bearer": token,
+            
+          }
+        })
+        .then((resp) =>  {
           commit(USERS_SEARCH_SUCCESS, resp)
           resolve(resp)
         })
@@ -49,15 +60,15 @@ const mutations = {
     config = { "bearer": '' };
   },
   [USERS_SEARCH_SUCCESS]: (state, resp) => {
-    state.rows = resp.data;
+    resp.json().then((responseData) => {
+    state.rows = responseData;
     state.status = 'success'
-
+    })
   },
   [USERS_SEARCH_ERROR]: (state, err) => {
     state.status = 'error'
     if(err.response.status=='401') {
 
-      //localStorage.removeItem('auth-user-token')
       state.token = ''
       router.push('/logout')
     }

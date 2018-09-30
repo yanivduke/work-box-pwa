@@ -33,7 +33,7 @@
         const { username, password } = this
         this.$store.dispatch(AUTH_REQUEST, { username, password }
         ).then(() => {
-          this.$router.push({ name: 'users' })
+          this.$router.push({ name: 'Main' })
         }).catch(function(e) {
           console.log(e);
         })

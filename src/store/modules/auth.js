@@ -18,14 +18,13 @@ const actions = {
       commit(AUTH_REQUEST)
       axios.post('http://localhost:3001/api/authenticate', user)
       .then(resp => {
-        console.log('axios resp: ' + resp.data.data.token)
 
         idbKeyVal.set('osAuth', 'auth-user-token', resp.data.data.token).then(async function () {
           await sendMsg('startSync', function (retMsg) {
             console.log(retMsg);
+            commit(AUTH_SUCCESS, resp.data.data)
+            resolve(resp.data.data)
           })
-          commit(AUTH_SUCCESS, resp.data.data)
-          resolve(resp.data.data)
         })
       })
       .catch(err => {
@@ -49,7 +48,6 @@ const actions = {
       commit(AUTH_REQUEST)
       idbKeyVal.get('osAuth', 'auth-user-token')
       .then(tt => {
-        console.log('idb auth-user-token resp: ' + tt)
         commit(AUTH_KEEPALIVE, tt)
         resolve(tt)
         
@@ -70,7 +68,6 @@ const mutations = {
   },
   [AUTH_SUCCESS]: (state, resp) => {
     state.status = 'success'
-    console.log('AUTH_SUCCESS: ' + resp.token)
     state.token = resp.token
     state.hasLoadedOnce = true
   },

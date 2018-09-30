@@ -33,7 +33,7 @@ const idbKeyVal = {
     })
     .catch(err => {
       console.log('err on get: ' + err)
-      return
+      throw err
     });
   },
   set(dbObjectStore, key, val) {
@@ -43,7 +43,7 @@ const idbKeyVal = {
       return tx.complete;
     }).catch(err => {
       console.log('err on set: ' + err)
-      return
+      throw err
     });
   },
   delete(dbObjectStore, key) {
@@ -53,7 +53,7 @@ const idbKeyVal = {
       return tx.complete;
     }).catch(err => {
       console.log('err on delete: ' + err)
-      return
+      throw err
     });
   },
   clear(dbObjectStore) {
@@ -63,7 +63,7 @@ const idbKeyVal = {
       return tx.complete;
     }).catch(err => {
       console.log('err on clear: ' + err)
-      return
+      throw err
     });
   },
   keys(dbObjectStore) {

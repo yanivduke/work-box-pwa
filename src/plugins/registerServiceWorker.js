@@ -2,25 +2,17 @@
 import { register } from 'register-service-worker'
 
 const sendMsg = async function(msg, handleChannelMessage) {
-  console.log('before sending msssage.')
   navigator.serviceWorker.ready
   .then(async function(reg) {
-    // set up a message channel to communicate with the SW
-    console.log(' sending msssage 1: ')
     var channel = new MessageChannel();
-    console.log(' sending msssage 2: ')
     channel.port1.onmessage = function(e) {
-      console.log(e);
-      console.log(' sending msssage 3: ' + e)
       handleChannelMessage(e.data);
-      console.log(' sending msssage 4: ' + e.data)
     }
     var mySW = reg.active;
-    console.log(' sending msssage sucsses: ' + mySW)
     await mySW.postMessage(msg, [channel.port2])
   })
   .catch(function(err) {
-    // set up a message channel to communicate with the SW
+    // err set up a message channel to communicate with the SW
     console.log(' sending msssage err: ' + err);
   })
 }
