@@ -19,15 +19,16 @@ const ifNotAuthenticated = (to, from, next) => {
 const ifAuthenticated = (to, from, next) => {
   store.dispatch(AUTH_KEEPALIVE).then(() => {
     if (store.getters.isAuthenticated) {
+      console.log('inside router: isAuthenticated')
       next()
       return
     }
     next('/login')
-  }).catch((err)=>{
+    console.log('inside router isNotAuthenticated')
+  }).catch((err) => {
+    console.log('inside router err: ' + err)
     next('/login')
   });
-  
-  //document.location = '/login'
 }
 
 export default new Router({

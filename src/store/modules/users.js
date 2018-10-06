@@ -1,6 +1,5 @@
 /* eslint-disable promise/param-names */
 import {USERS_SEARCH_REQUEST, USERS_SEARCH_SUCCESS, USERS_SEARCH_ERROR} from '../actions/users'
-import axios from 'axios'
 
 import {idbKeyVal} from '../../idbPromise'
 
@@ -32,9 +31,8 @@ const actions = {
           cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
           //credentials: "same-origin", // include, same-origin, *omit
           headers: {
-              "Content-Type": "application/json; charset=utf-8",
-              "bearer": token,
-            
+            "Content-Type": "application/json; charset=utf-8",
+            "bearer": token,
           }
         })
         .then((resp) =>  {

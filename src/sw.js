@@ -5,15 +5,22 @@ importScripts('/js/idb.js');
 workbox.skipWaiting();
 workbox.clientsClaim();
 
+// temporary workaround for https://bugs.chromium.org/p/chromium/issues/detail?id=823392
+self.addEventListener('fetch', (e) => {
+  if (e.request.cache === 'only-if-cached' && e.request.mode !== 'same-origin') {
+    return;
+  }
+})
+
 self.addEventListener('message', (event) => {
   if (!event.data){
     return;
   }
-
+  console.log('message accepted on SW: ' + event.data);
   switch (event.data) {
-    case 'startSync':
-      console.log('message accepted on SW!');
-      event.ports[0].postMessage("SW Says hi");
+    case 'sw-activate':
+      //console.log('SW message: ' + event.data);
+      event.ports[0].postMessage("SW Says 'I'm ready & activated!");
       break;
     default:
       // NOOP
@@ -45,11 +52,6 @@ workbox.routing.registerRoute(
       }),
     ],
   }),
-);
-
-workbox.routing.registerRoute(
-  new RegExp('/#/login'),
-  workbox.strategies.networkOnly(),
 );
 
 workbox.routing.registerRoute(
@@ -90,7 +92,7 @@ workbox.routing.registerRoute(new RegExp('http://localhost:3001/api/.*'),
             })
         }))
       } else {
-        console.log("SW remember users from idb: " + responseData)
+        console.log("SW remember users from idb: " + localdata)
         return new Promise((resolve, reject) => {
           resolve(localdata)
         })

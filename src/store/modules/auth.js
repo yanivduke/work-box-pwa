@@ -1,6 +1,5 @@
 /* eslint-disable promise/param-names */
 import { AUTH_REQUEST, AUTH_ERROR, AUTH_SUCCESS, AUTH_LOGOUT, AUTH_KEEPALIVE } from '../actions/auth'
-import axios from 'axios'
 
 import {idbKeyVal} from '../../idbPromise'
 import {sendMsg} from '../../plugins/registerServiceWorker'
@@ -15,47 +14,86 @@ const getters = {
 const actions = {
   [AUTH_REQUEST]: ({commit, dispatch}, user) => {
     return new Promise((resolve, reject) => {
-      commit(AUTH_REQUEST)
-      axios.post('http://localhost:3001/api/authenticate', user)
-      .then(resp => {
+      let data = JSON.stringify(user);
+      let postConfig = {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, cors, *same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        //credentials: 'include', // include, same-origin, *omit
+        headers: {
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        body: data,
+      }
 
-        idbKeyVal.set('osAuth', 'auth-user-token', resp.data.data.token).then(async function () {
-          await sendMsg('startSync', function (retMsg) {
-            console.log(retMsg);
-            commit(AUTH_SUCCESS, resp.data.data)
-            resolve(resp.data.data)
+      commit(AUTH_REQUEST)
+
+      fetch('http://localhost:3001/api/authenticate/', postConfig)
+      .then((resp) => resp.json().then((respJson) => {
+        sendMsg('sw-activate', (retMsg) => {
+          console.log(retMsg);
+          idbKeyVal.set('osAuth', 'auth-user-token', respJson.data.token)
+          .then(() => {
+            commit(AUTH_SUCCESS, respJson)
+            resolve(respJson.data)
           })
         })
-      })
+      }))
       .catch(err => {
-        idbKeyVal.delete('osAuth', 'auth-user-token').then(()=>{
+        idbKeyVal.delete('osAuth', 'auth-user-token')
+        .then(() => {
           commit(AUTH_ERROR, err)
           reject(err)
+        })
+        .catch(err => {
+          idbKeyVal.clear('osAuth')
+          .then(()=>{
+            commit(AUTH_ERROR, err)
+            reject(err)
+          })
+          .catch(err => {
+            commit(AUTH_ERROR, err)
+            reject(err)
+          })
         })
       })
     })
   },
   [AUTH_LOGOUT]: ({commit}) => {
     return new Promise((resolve, reject) => {
-      idbKeyVal.delete('osAuth', 'auth-user-token').then(()=>{
+      idbKeyVal.delete('osAuth', 'auth-user-token')
+      .then(()=>{
         commit(AUTH_LOGOUT)
         resolve()
       })
     })
   },
-  [AUTH_KEEPALIVE]: ({commit, dispatch}, user) => {
+  [AUTH_KEEPALIVE]: ({commit}) => {
     return new Promise((resolve, reject) => {
       commit(AUTH_REQUEST)
+      console.log('inside AUTH_KEEPALIVE')
       idbKeyVal.get('osAuth', 'auth-user-token')
-      .then(tt => {
+      .then((tt) => {
+        console.log('inside idbKeyVal.get: ' + tt)
         commit(AUTH_KEEPALIVE, tt)
         resolve(tt)
-        
       })
       .catch(err => {
-        idbKeyVal.delete('osAuth', 'auth-user-token').then(()=>{
+        idbKeyVal.delete('osAuth', 'auth-user-token')
+        .then(()=>{
           commit(AUTH_ERROR, err)
           reject(err)
+        })
+        .catch(err => {
+          idbKeyVal.clear('osAuth')
+          .then(()=>{
+            commit(AUTH_ERROR, err)
+            reject(err)
+          })
+          .catch(err => {
+            commit(AUTH_ERROR, err)
+            reject(err)
+          })
         })
       })
     })
@@ -68,7 +106,7 @@ const mutations = {
   },
   [AUTH_SUCCESS]: (state, resp) => {
     state.status = 'success'
-    state.token = resp.token
+    state.token = resp.data.token
     state.hasLoadedOnce = true
   },
   [AUTH_ERROR]: (state) => {
