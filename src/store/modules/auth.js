@@ -28,7 +28,8 @@ const actions = {
 
       commit(AUTH_REQUEST)
 
-      fetch('http://localhost:3001/api/authenticate/', postConfig)
+      //fetch('http://localhost:3001/api/authenticate/', postConfig)
+      fetch('/api/authenticate/', postConfig)
       .then((resp) => resp.json().then((respJson) => {
         sendMsg('sw-activate', (retMsg) => {
           console.log(retMsg);

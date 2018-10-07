@@ -25,7 +25,8 @@ const actions = {
 
       idbKeyVal.get('osAuth', 'auth-user-token')
       .then((token) => {
-        fetch('http://localhost:3001/api/users', {
+        //fetch('http://localhost:3001/api/users', {
+        fetch('/api/users', {
           method: "GET", // *GET, POST, PUT, DELETE, etc.
           mode: "cors", // no-cors, cors, *same-origin
           cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
